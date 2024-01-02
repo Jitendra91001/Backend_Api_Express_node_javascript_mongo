@@ -94,7 +94,6 @@ const loginUser = asyncHandler(async(req,res) => {
 //check the password
 //access and refresh token
 //send the cookies sequre
-
 const {Username,email,password} = req.body;
 // if([Username,email,password].some((err)=>err.trim() === "")){
 //   throw new ApiError(400,"Username or password is requred");
@@ -135,6 +134,7 @@ return  res.status(200)
       user : loggedInUser,accessToken,refreshToken
     },"User logged In Successfully"
   )
+
 )
 
 
@@ -142,7 +142,27 @@ return  res.status(200)
 })
 
 const logoutUser = asyncHandler(async(req,res)=>{
-   User.findById()
+     User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $set:{
+          refreshToken: undefined
+        }
+      },
+      {
+        new :true
+      }
+     )
+     const option = {
+      httpOnly:true,
+      secure:true
+    }
+
+    return res.status(200)
+    .clearCookie("accessToken",option)
+    .clearCookie("refreshToken",option)
+    .json(new ApiResponse(200,{},"User logout successfuly"))
+
 })
 
 export { 

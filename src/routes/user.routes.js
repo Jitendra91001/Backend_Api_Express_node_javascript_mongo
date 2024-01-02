@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { ragisterUser } from "../controllers/user.ragister.js";
+import { loginUser, logoutUser, ragisterUser } from "../controllers/user.ragister.js";
 import { upload } from "../middlewere/multer.middleware.js";
+import { verifyJWT } from "../middlewere/auth.middleware.js";
 
 const router = Router();
 
@@ -17,6 +18,12 @@ router.route("/ragister").post(
     ]),
     ragisterUser
     )
+
+router.route("/login").post(loginUser);
+
+//sequred router
+
+router.route("/logout").post( verifyJWT,logoutUser);
 
 
 export default router;
