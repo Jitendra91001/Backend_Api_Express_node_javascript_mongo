@@ -36,7 +36,7 @@ const UserSchema = new Schema({
         type:String,
         required:true
     },
-    refressToken:{
+    refreshToken:{
         type:String,
     },
     watchHistroy:{
@@ -52,16 +52,18 @@ UserSchema.pre("save",async function(next){
 })
 
 UserSchema.methods.isPasswordCorrect = async function(password){
-    await bcrypt.compare(password,this.password);
+   const data =  await bcrypt.compare(password,this.password);
+   return data;
 }
 
 UserSchema.methods.generateAccessToken = function(){
-    jwt.sign(
+   return jwt.sign(
         {
             _id:this._id,
             email:this.email,
             fullname:this.email,
-            Username:this.UserSchema
+            Username:this.Username,
+            fullname:this.fullname
         },
         process.env.ACESS_TOKEN_SECRET,
         {
@@ -71,7 +73,7 @@ UserSchema.methods.generateAccessToken = function(){
 }
 
 UserSchema.methods.generateRefressToken = function(){
-    jwt.sign(
+   return jwt.sign(
         {
             _id:this._id,
         },
@@ -81,6 +83,4 @@ UserSchema.methods.generateRefressToken = function(){
         }
     )
 }
-
-
 export const User = mongoose.model("User",UserSchema);
