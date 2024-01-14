@@ -171,7 +171,6 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const RefreshTokenUser = asyncHandler(async (req, res) => {
   const IncomingRefeshToken = req.cookies.refreshToken || req.body.refreshToken;
-  console.log(IncomingRefeshToken)
 
   if (!IncomingRefeshToken) {
     throw new ApiError(401, "Unthourised Token");
@@ -201,8 +200,8 @@ const RefreshTokenUser = asyncHandler(async (req, res) => {
     const { accessToken, newRefreshToken } = generateAccessAndRefreshToken(
       user?._id
     );
-
-    console.log(accessToken);
+    console.log(accessToken, "acctoken");
+    console.log(newRefreshToken, "refreshToken");
 
     return res
       .status(200)
@@ -220,4 +219,71 @@ const RefreshTokenUser = asyncHandler(async (req, res) => {
   }
 });
 
-export { ragisterUser, loginUser, logoutUser, RefreshTokenUser };
+const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  const user = await User.findById(req.user?._id);
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid old password");
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json(new ApiResponse(200, {}, "Password change successfuly"));
+});
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "current user fetched successfully"));
+});
+
+const UpdatedAccountDetails = asyncHandler(async (req, res) => {
+  const { fullName, email } = req.body;
+
+  if (!fullName || !email) {
+    throw new ApiError(401, "All fields are required");
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        fullName,
+        email,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password");
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(
+      200,
+      user,
+      "Account Details updated successfully"
+    )
+  )
+});
+
+const UpdateAvatarDetails = asyncHandler(async (req,res)=>{
+
+})
+
+
+
+export {
+  ragisterUser,
+  loginUser,
+  logoutUser,
+  RefreshTokenUser,
+  changePassword,
+  getCurrentUser,
+  UpdatedAccountDetails,
+  UpdateAvatarDetails
+};
